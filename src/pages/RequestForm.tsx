@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Spinner from "../components/Spinner";
 
 interface FormData {
   initiatorName: string;
@@ -33,6 +34,7 @@ const RequestForm: React.FC = () => {
     requestRemarks: "",
     attachment: null,
   });
+  const [loading, setLoading] = useState(false);
 
   // Handle text, select, date, textarea fields
   const handleChange = (
@@ -54,6 +56,8 @@ const RequestForm: React.FC = () => {
   // Submit form data
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true); // start loading
+
     try {
       const form = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
@@ -71,13 +75,32 @@ const RequestForm: React.FC = () => {
       );
       console.log("Success:", response.data);
       alert("Request submitted successfully!");
+      setFormData({
+        initiatorName: "",
+        department: "",
+        mobileNo: "",
+        emailId: "",
+        requestDate: "",
+        complaintType: "",
+        location: "",
+        division: "",
+        priority: "",
+        assignedTo: "",
+        requestType: "",
+        requestRemarks: "",
+        attachment: null,
+      });
     } catch (error) {
       console.error("Error submitting request:", error);
       alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
+  return loading ? (
+    <Spinner />
+  ) : (
     <div className='max-w-6xl mx-auto p-6 sm:p-10 bg-white shadow-2xl rounded-2xl mt-12 mb-10'>
       <h2 className='text-4xl font-bold text-center text-amber-700 uppercase mb-10'>
         Request Form
@@ -251,36 +274,12 @@ const RequestForm: React.FC = () => {
           </div>
         </fieldset>
 
-        {/* Buttons */}
         <div className='flex justify-end gap-4 mt-10'>
           <button
             type='submit'
             className='bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-2 rounded-xl'>
             Save
           </button>
-          <button
-            type='button'
-            onClick={() =>
-              setFormData({
-                initiatorName: "",
-                department: "",
-                mobileNo: "",
-                emailId: "",
-                requestDate: "",
-                complaintType: "",
-                location: "",
-                division: "",
-                priority: "",
-                assignedTo: "",
-                requestType: "",
-                requestRemarks: "",
-                attachment: null,
-              })
-            }
-            className='bg-yellow-300 hover:bg-yellow-400 text-black font-semibold px-6 py-2 rounded-xl'>
-            Refresh
-          </button>
-          
         </div>
       </form>
     </div>

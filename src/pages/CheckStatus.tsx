@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
+import { useReactToPrint } from "react-to-print";
+import Spinner from "../components/Spinner";
 
 interface RequestData {
   id: number;
@@ -22,6 +24,8 @@ const CheckStatus: React.FC = () => {
   const [requestId, setRequestId] = useState<string>("");
   const [requestData, setRequestData] = useState<RequestData | null>(null);
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async () => {
     if (!requestId.trim()) {
@@ -30,13 +34,15 @@ const CheckStatus: React.FC = () => {
       return;
     }
 
+    setLoading(true); // start loading
+
     try {
       const resp = await axios.get<RequestData>(
         `https://localhost:7096/api/Requests/${requestId}`
       );
       setRequestData(resp.data);
       setError("");
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
       setRequestData(null);
       if (err.response?.status === 404) {
@@ -44,8 +50,15 @@ const CheckStatus: React.FC = () => {
       } else {
         setError("Server error. Please try again later.");
       }
+    } finally {
+      setLoading(false); // stop loading
     }
   };
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: `Request_${requestId}`,
+  });
 
   return (
     <div className='max-w-6xl mx-auto p-6 sm:p-10 bg-white shadow-2xl rounded-2xl mt-12 mb-10'>
@@ -71,10 +84,12 @@ const CheckStatus: React.FC = () => {
         </button>
       </div>
 
-      {error && <p className='text-red-600 font-medium mb-6'>{error}</p>}
-
-      {requestData && (
-        <>
+      {loading ? (
+        <Spinner />
+      ) : !requestData ? (
+        <p className='text-red-600 font-medium mb-6'>{error}</p>
+      ) : (
+        <div ref={printRef} className='text-[#b91c1c]'>
           {/* Personal Details */}
           <fieldset className='border border-gray-300 rounded-xl p-6 mb-8 shadow-sm'>
             <legend className='text-lg font-semibold text-red-600 px-2'>
@@ -165,7 +180,7 @@ const CheckStatus: React.FC = () => {
             </div>
           </fieldset>
 
-          {/* Previous Remarks / Add Remark */}
+          {/* Previous Remarks */}
           <div className='border border-gray-200 rounded-xl p-6 mb-6 bg-gray-50 shadow-inner'>
             <label className='block font-medium mb-2'>Previous Remarks</label>
             <textarea
@@ -192,7 +207,14 @@ const CheckStatus: React.FC = () => {
               </a>
             </div>
           )}
-        </>
+
+          {/* Download as PDF */}
+          <button
+            onClick={handlePrint}
+            className='mt-4 px-4 py-2 rounded-lg bg-green-100 text-green-800 hover:bg-green-200'>
+            Download as PDF
+          </button>
+        </div>
       )}
     </div>
   );
