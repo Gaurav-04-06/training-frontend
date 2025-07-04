@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Spinner from "../components/Spinner";
 import { Bounce, ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 interface FormData {
   initiatorName: string;
@@ -105,7 +105,7 @@ const RequestForm: React.FC = () => {
       console.error("Error submitting request:", error);
       setLoading(false);
 
-      toast.error("❌ Something went wrong while submitting!", {
+      toast.error("Enter Valid Details", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: false,
